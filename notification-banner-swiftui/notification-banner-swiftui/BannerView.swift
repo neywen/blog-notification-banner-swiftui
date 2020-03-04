@@ -10,7 +10,7 @@ import SwiftUI
 
 struct BannerData {
     let title: String
-    let subtitle: String? = nil
+    let subtitle: String
     var actionTitle: String? = nil
     var level: Level = .info
     
@@ -20,6 +20,7 @@ struct BannerData {
         case fullWidth
         case popUp
         case action
+        case autodismiss
     }
     
     enum Level {
@@ -31,7 +32,7 @@ struct BannerData {
         var tintColor: Color {
             switch self {
             case .error: return .red
-            case .info: return .white
+            case .info: return Color(.sRGB, red: 0.25, green: 0.59, blue: 0.84, opacity: 1)
             case .success: return .green
             case .warning: return .yellow
             }
@@ -48,6 +49,8 @@ extension BannerData {
             return AnyView(FullWidthBanner(data: self))
         case .action:
             return AnyView(BannerWithButton(data: self, action: action))
+        case .autodismiss:
+            return AnyView(AutoDismissBanner(data: self))
         }
     }
 }
@@ -65,7 +68,12 @@ struct BannerView: ViewModifier {
                     .transition(AnyTransition.move(edge: .top).combined(with: .opacity))
                     .onTapGesture {
                         self.isPresented = false
+                }
+                .onAppear() {
+                    Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { (timer) in
+                        self.isPresented = false
                     }
+                }
             }
             content
         }
@@ -80,15 +88,33 @@ extension View {
 
 // MARK: - Some concrete banners
 
+struct AutoDismissBanner: View {
+    let data: BannerData
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(data.title).fontWeight(.semibold)
+                Text(data.subtitle)
+            }
+            .padding(12)
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+            .background(data.level.tintColor)
+            .cornerRadius(8)
+        }
+        .foregroundColor(.white)
+        .padding(.top, 8)
+        .padding(.leading, 8)
+        .padding(.trailing, 8)
+    }
+}
+
 struct FullWidthBanner: View {
     let data: BannerData
     
     var body: some View {
         HStack {
-            Spacer()
             Text(data.title)//.foregroundColor(.white)
-            Spacer()
-            Image(systemName: "arrow.right").foregroundColor(.white)
         }
         .padding(EdgeInsets(top: 12, leading: 8, bottom: 12, trailing: 8))
         .background(data.level.tintColor)
@@ -97,20 +123,16 @@ struct FullWidthBanner: View {
 
 struct LocalNotification: View {
     let data: BannerData
-
+    
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(data.title)
                     .bold()
-                if data.subtitle != nil {
-                    Text(data.subtitle!)
-                }
+                Text(data.subtitle)
             }
             .multilineTextAlignment(.leading)
-            .foregroundColor(.black)
-            Spacer()
-            Image(systemName: "arrow.right").foregroundColor(.black)
+            .foregroundColor(.white)
         }
         .padding(EdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 12))
         .background(Color.white)
@@ -140,5 +162,5 @@ struct BannerWithButton: View {
         .padding(EdgeInsets(top: 12, leading: 8, bottom: 12, trailing: 8))
         .background(data.level.tintColor)
     }
-
+    
 }
