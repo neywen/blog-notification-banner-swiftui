@@ -70,7 +70,7 @@ struct BannerView: ViewModifier {
                         self.isPresented = false
                 }
                 .onAppear() {
-                    Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { (timer) in
+                    Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { (timer) in
                         self.isPresented = false
                     }
                 }
@@ -94,7 +94,7 @@ struct AutoDismissBanner: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(data.title).fontWeight(.semibold)
+                Text(data.title).fontWeight(.bold)
                 Text(data.subtitle)
             }
             .padding(12)
